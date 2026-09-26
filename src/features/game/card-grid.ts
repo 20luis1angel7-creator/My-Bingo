@@ -9,13 +9,22 @@ export function findGrid({ width, height, data }: Pixels): Grid | null {
     const bands: number[][] = [];
     for (let a = 0; a < size; a++) {
       let run = 0,
-        longest = 0;
+        longest = 0,
+        gap = 0;
       for (let b = 0; b < length; b++) {
         const i = (vertical ? b * width + a : a * width + b) * 4;
         const dark =
           Math.min(data[i], data[i + 1], data[i + 2]) < 180 &&
           data[i + 3] > 128;
-        run = dark ? run + 1 : 0;
+        if (dark) {
+          run += gap + 1;
+          gap = 0;
+        } else if (run > 0 && gap < 2) {
+          gap++;
+        } else {
+          run = 0;
+          gap = 0;
+        }
         longest = Math.max(longest, run);
       }
       if (longest < length * 0.3) continue;

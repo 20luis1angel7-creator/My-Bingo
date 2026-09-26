@@ -35,8 +35,8 @@ export function ManualCard({
       }}
     >
       <p id="manual-help" className="mb-4 text-sm text-muted-foreground">
-        Copia los números de tu cartón. El centro es libre. Al guardar se
-        reemplazarán el cartón actual y sus marcas.
+        Copia o revisa los números de tu cartón. El centro es libre. Al guardar
+        se añadirá a tus cartones.
       </p>
       <div className="grid grid-cols-5 gap-2">
         {LETTERS.map((letter, col) => (
@@ -82,7 +82,7 @@ export function ManualCard({
         </p>
       )}
       <Button type="submit" className="mt-4 h-11 w-full">
-        Guardar y jugar
+        Guardar cartón
       </Button>
     </form>
   );

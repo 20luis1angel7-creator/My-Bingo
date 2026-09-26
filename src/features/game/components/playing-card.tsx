@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LETTERS, type Game } from "../engine";
 
@@ -6,33 +6,45 @@ export function PlayingCard({
   game,
   winners,
   onToggle,
+  onRemove,
+  id,
+  label,
 }: {
+  id: string;
+  label: string;
+  onRemove: () => void;
   game: Game;
   winners: number[];
   onToggle: (number: number) => void;
 }) {
   return (
     <section
-      aria-labelledby="card-title"
-      className="rounded-3xl border bg-white p-4 shadow-sm sm:p-7"
+      aria-labelledby={`card-title-${id}`}
+      className="w-[280px] max-w-full rounded-2xl border bg-white p-3 shadow-sm"
     >
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 id="card-title" className="text-xl font-bold">
-          Tu cartón de la suerte
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h2 id={`card-title-${id}`} className="text-sm font-bold">
+          {label}
         </h2>
-        <span className="rounded-full bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
-          75 bolas
-        </span>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Eliminar ${label.toLowerCase()}`}
+          title={`Eliminar ${label.toLowerCase()}`}
+          className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-primary"
+        >
+          <Trash2 aria-hidden="true" className="size-4" />
+        </button>
       </div>
       <div
-        className="grid grid-cols-5 gap-2"
+        className="grid grid-cols-5 gap-1"
         role="group"
-        aria-label="Cartón de bingo"
+        aria-label={`Números de ${label.toLowerCase()}`}
       >
         {LETTERS.map((letter) => (
           <div
             key={letter}
-            className="flex h-12 items-center justify-center rounded-xl bg-primary text-xl font-extrabold text-white"
+            className="flex h-8 items-center justify-center rounded-lg bg-primary text-sm font-extrabold text-white"
             aria-hidden="true"
           >
             {letter}
@@ -55,14 +67,14 @@ export function PlayingCard({
                   : `${LETTERS[index % 5]} ${number}${marked ? ", marcado" : ", pendiente"}`
               }
               className={cn(
-                "relative flex aspect-square items-center justify-center rounded-xl border border-transparent bg-muted/60 text-xl font-bold sm:text-2xl",
+                "relative flex aspect-square items-center justify-center rounded-lg border border-transparent bg-muted/60 text-lg font-bold",
                 marked && "border-primary/30 bg-primary/15 text-primary",
                 winners.includes(index) &&
                   "border-amber-400 bg-amber-100 text-amber-900",
               )}
             >
               {number === null ? (
-                <Star aria-hidden="true" className="size-6 fill-current" />
+                <Star aria-hidden="true" className="size-5 fill-current" />
               ) : (
                 number
               )}
@@ -78,10 +90,21 @@ export function PlayingCard({
           );
         })}
       </div>
-      <p className="mt-5 text-center text-sm text-muted-foreground">
-        Pulsa un número para marcarlo. Pulsa otra vez para desmarcarlo. La
-        estrella siempre está marcada.
-      </p>
+      <div
+        role="status"
+        aria-live="polite"
+        className="mt-3 text-center text-xs"
+      >
+        {winners.length > 0 ? (
+          <p className="flex items-center justify-center gap-1 rounded-lg bg-amber-100 p-2 font-bold text-amber-900">
+            <Trophy aria-hidden="true" className="size-4" /> ¡Bingo!
+          </p>
+        ) : (
+          <p className="text-muted-foreground">
+            {game.marked.length}/24 marcados · Centro libre
+          </p>
+        )}
+      </div>
     </section>
   );
 }

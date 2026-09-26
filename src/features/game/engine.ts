@@ -109,3 +109,72 @@ export function isGame(value: unknown): value is Game {
     game.marked.every((n) => Number.isInteger(n) && game.card.includes(n))
   );
 }
+
+export type SavedCard = { id: string; game: Game };
+export type CardCollection = { version: 3; cards: SavedCard[] };
+
+export function restoreCollection(value: unknown): CardCollection | null {
+  if (
+    value &&
+    typeof value === "object" &&
+    "version" in value &&
+    value.version === 3
+  ) {
+    const collection = value as CardCollection;
+    if (!Array.isArray(collection.cards)) return null;
+    const ids = new Set<string>();
+    for (const entry of collection.cards) {
+      if (
+        !entry ||
+        typeof entry.id !== "string" ||
+        !entry.id.trim() ||
+        ids.has(entry.id) ||
+        !isGame(entry.game)
+      )
+        return null;
+      ids.add(entry.id);
+    }
+    return collection;
+  }
+  const game = restoreGame(value);
+  return game ? { version: 3, cards: [{ id: "saved-card", game }] } : null;
+}
+
+export function addCard(
+  collection: CardCollection,
+  game: Game,
+  id: string,
+): CardCollection {
+  if (
+    !id.trim() ||
+    collection.cards.some((card) => card.id === id) ||
+    !isGame(game)
+  )
+    return collection;
+  return { ...collection, cards: [...collection.cards, { id, game }] };
+}
+
+export function removeCard(
+  collection: CardCollection,
+  id: string,
+): CardCollection {
+  return {
+    ...collection,
+    cards: collection.cards.filter((card) => card.id !== id),
+  };
+}
+
+export function toggleCardNumber(
+  collection: CardCollection,
+  id: string,
+  number: number,
+): CardCollection {
+  return {
+    ...collection,
+    cards: collection.cards.map((card) =>
+      card.id === id
+        ? { ...card, game: toggleNumber(card.game, number) }
+        : card,
+    ),
+  };
+}

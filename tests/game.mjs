@@ -70,3 +70,69 @@ test("migrates previous games preserving card and matching marks", () => {
   assert.deepEqual(restored, { ...game, marked: [game.card[0]] });
   assert.equal(restoreGame({}), null);
 });
+
+import {
+  restoreCollection,
+  addCard,
+  removeCard,
+  toggleCardNumber,
+} from "../.test-build/engine.js";
+
+test("migrates a saved card and its marks into a collection", () => {
+  const game = createGame();
+  game.marked = [game.card[0], game.card[1]];
+  const restored = restoreCollection(game);
+  assert.equal(restored.version, 3);
+  assert.equal(restored.cards.length, 1);
+  assert.deepEqual(restored.cards[0].game, game);
+  const legacy = restoreCollection({
+    version: 1,
+    card: game.card,
+    drawn: game.marked,
+  });
+  assert.deepEqual(legacy.cards[0].game, game);
+});
+
+test("adds cards without replacing existing numbers or marks and toggles only the selected card", () => {
+  const game = createGame();
+  const original = {
+    version: 3,
+    cards: [{ id: "first", game: { ...game, marked: [game.card[0]] } }],
+  };
+  const added = addCard(original, game, "second");
+  assert.equal(added.cards.length, 2);
+  assert.deepEqual(added.cards[0], original.cards[0]);
+  const marked = toggleCardNumber(added, "second", game.card[1]);
+  assert.deepEqual(marked.cards[0].game.marked, [game.card[0]]);
+  assert.deepEqual(marked.cards[1].game.marked, [game.card[1]]);
+  assert.deepEqual(
+    restoreCollection(JSON.parse(JSON.stringify(marked))),
+    marked,
+  );
+  assert.equal(addCard(added, game, "first"), added);
+});
+
+test("deletes only the selected card and persists an empty collection", () => {
+  const first = { id: "a", game: createGame() };
+  const second = { id: "b", game: createGame() };
+  const collection = { version: 3, cards: [first, second] };
+  const removed = removeCard(collection, "a");
+  assert.deepEqual(removed.cards, [second]);
+  assert.deepEqual(removeCard(collection, "missing"), collection);
+  assert.deepEqual(restoreCollection(removeCard(removed, "b")), {
+    version: 3,
+    cards: [],
+  });
+});
+
+test("rejects invalid collections and duplicate identifiers", () => {
+  const entry = { id: "a", game: createGame() };
+  for (const value of [
+    { version: 3 },
+    { version: 3, cards: [entry, entry] },
+    { version: 3, cards: [null] },
+    { version: 3, cards: [{ ...entry, id: "" }] },
+    { version: 3, cards: [{ ...entry, game: {} }] },
+  ])
+    assert.equal(restoreCollection(value), null);
+});

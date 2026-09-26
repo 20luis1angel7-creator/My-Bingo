@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCcw, Trophy } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBingo } from "../use-bingo";
 import { winningCells } from "../engine";
@@ -10,19 +10,18 @@ import { ManualCard } from "./manual-card";
 import { CardScanner } from "./card-scanner";
 
 export function BingoGame() {
-  const { game, notice, toggle, restart } = useBingo();
-  const [confirmReset, setConfirmReset] = useState(false);
+  const { collection, notice, toggle, add, remove, clearMarks } = useBingo();
   const [manual, setManual] = useState(false);
   const [scanned, setScanned] = useState<string[]>([]);
-  if (!game)
+  const [message, setMessage] = useState("");
+  if (!collection)
     return (
       <p role="status" className="py-20 text-center text-muted-foreground">
-        Preparando tu cartón…
+        Preparando tus cartones…
       </p>
     );
-  const winners = winningCells(game);
   return (
-    <div className="mx-auto max-w-xl">
+    <div>
       {notice && (
         <p
           role="status"
@@ -31,97 +30,109 @@ export function BingoGame() {
           {notice}
         </p>
       )}
-      <CardScanner
-        onRead={(card) => {
-          setScanned(card);
-          setManual(true);
-          setConfirmReset(false);
-        }}
-      />
-      <Button
-        className="mb-4 h-11 w-full"
-        aria-expanded={manual}
-        aria-controls="manual-card"
-        onClick={() => {
-          setScanned([]);
-          setManual(!manual);
-        }}
-      >
-        {manual ? "Cancelar ingreso manual" : "Ingresar cartón manual"}
-      </Button>
-      {manual && (
-        <ManualCard
-          key={JSON.stringify(scanned)}
-          initialValues={scanned}
-          onSave={(card) => {
-            restart(card);
-            setManual(false);
-            setConfirmReset(false);
+      <div className="mb-6 max-w-lg">
+        <CardScanner
+          onRead={(card) => {
+            setScanned(card);
+            setManual(true);
+            setMessage("");
           }}
         />
-      )}
-      <PlayingCard game={game} winners={winners} onToggle={toggle} />
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="mt-5 text-center"
-      >
-        {winners.length > 0 ? (
-          <div className="rounded-2xl bg-amber-100 p-5 text-amber-950">
-            <Trophy aria-hidden="true" className="mx-auto mb-2 size-7" />
-            <h2 className="text-2xl font-extrabold">¡Bingo!</h2>
-            <p className="mt-2 text-sm">
-              Tus marcas completan una fila, columna o diagonal. Puedes seguir
-              marcando o corregir un número.
-            </p>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {game.marked.length} de 24 números marcados · Centro libre
-          </p>
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Button
+            className="h-11"
+            aria-expanded={manual}
+            aria-controls="manual-card"
+            onClick={() => {
+              setScanned([]);
+              setManual(!manual);
+            }}
+          >
+            <Plus aria-hidden="true" />{" "}
+            {manual ? "Cancelar ingreso" : "Añadir cartón manual"}
+          </Button>
+          <Button
+            className="h-11"
+            variant="outline"
+            onClick={() => {
+              add();
+              setMessage("Cartón aleatorio añadido.");
+            }}
+          >
+            <Plus aria-hidden="true" /> Añadir aleatorio
+          </Button>
+        </div>
+        {manual && (
+          <ManualCard
+            key={JSON.stringify(scanned)}
+            initialValues={scanned}
+            onSave={(card) => {
+              add(card);
+              setManual(false);
+              setScanned([]);
+              setMessage("Cartón guardado. Ya puedes añadir otro.");
+            }}
+          />
         )}
       </div>
-      <Button
-        onClick={() => setConfirmReset(true)}
-        variant="outline"
-        className="mt-5 h-11 w-full"
-        disabled={confirmReset}
-      >
-        <RotateCcw aria-hidden="true" /> Nueva partida
-      </Button>
-      {confirmReset && (
-        <div
-          className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4"
-          role="group"
-          aria-label="Confirmar nueva partida"
+      <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h2 className="text-xl font-bold">
+          Mis cartones{" "}
+          <span className="text-sm font-normal text-muted-foreground">
+            ({collection.cards.length})
+          </span>
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          Pulsa un número para marcarlo o desmarcarlo.
+        </p>
+      </div>
+      <div className="mb-3 flex items-center gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="shrink-0"
+          disabled={
+            !collection.cards.some(({ game }) => game.marked.length > 0)
+          }
+          onClick={() => {
+            clearMarks();
+            setMessage("Se desmarcaron todos los cartones.");
+          }}
         >
-          <p className="text-sm">
-            Se reemplazarán el cartón y sus marcas. ¿Comenzar otra partida?
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button
-              className="h-11"
-              onClick={() => {
-                restart();
-                setConfirmReset(false);
-              }}
-            >
-              Sí, comenzar otra
-            </Button>
-            <Button
-              variant="outline"
-              className="h-11"
-              onClick={() => setConfirmReset(false)}
-            >
-              Cancelar
-            </Button>
-          </div>
-        </div>
+          <RotateCcw aria-hidden="true" /> Desmarcar todos
+        </Button>
+        <p role="status" className="min-w-0 text-sm text-muted-foreground">
+          {message}
+        </p>
+      </div>
+      <div
+        className="flex flex-wrap items-start gap-4"
+        aria-label="Cartones registrados"
+      >
+        {collection.cards.map(({ id, game }, index) => (
+          <PlayingCard
+            key={id}
+            id={id}
+            label={`Cartón ${index + 1}`}
+            game={game}
+            winners={winningCells(game)}
+            onToggle={(number) => toggle(id, number)}
+            onRemove={() => {
+              remove(id);
+              setMessage(`Cartón ${index + 1} eliminado.`);
+            }}
+          />
+        ))}
+      </div>
+      {collection.cards.length === 0 && (
+        <p className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground">
+          Todavía no tienes cartones. Sube una foto o añade uno con los botones
+          de arriba.
+        </p>
       )}
-      <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
-        Las marcas se guardan en este navegador. Completa una fila, columna o
-        diagonal para hacer bingo.
+      <p className="mt-5 text-xs leading-5 text-muted-foreground">
+        Tus cartones y sus marcas se guardan en este navegador. Completa una
+        fila, columna o diagonal para hacer bingo.
       </p>
     </div>
   );
