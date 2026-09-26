@@ -30,15 +30,16 @@ export function BingoGame() {
           {notice}
         </p>
       )}
-      <div className="mb-6 max-w-lg">
-        <CardScanner
-          onRead={(card) => {
-            setScanned(card);
-            setManual(true);
-            setMessage("");
-          }}
-        />
+      <div className="mb-6">
         <div className="mb-4 flex flex-wrap gap-2">
+          <CardScanner
+            onStatus={setMessage}
+            onRead={(card) => {
+              setScanned(card);
+              setManual(true);
+              setMessage("");
+            }}
+          />
           <Button
             className="h-11"
             aria-expanded={manual}
@@ -63,16 +64,18 @@ export function BingoGame() {
           </Button>
         </div>
         {manual && (
-          <ManualCard
-            key={JSON.stringify(scanned)}
-            initialValues={scanned}
-            onSave={(card) => {
-              add(card);
-              setManual(false);
-              setScanned([]);
-              setMessage("Cartón guardado. Ya puedes añadir otro.");
-            }}
-          />
+          <div className="max-w-lg">
+            <ManualCard
+              key={JSON.stringify(scanned)}
+              initialValues={scanned}
+              onSave={(card) => {
+                add(card);
+                setManual(false);
+                setScanned([]);
+                setMessage("Cartón guardado. Ya puedes añadir otro.");
+              }}
+            />
+          </div>
         )}
       </div>
       <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">

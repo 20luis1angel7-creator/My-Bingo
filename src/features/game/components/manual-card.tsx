@@ -14,7 +14,7 @@ export function ManualCard({
     <form
       id="manual-card"
       aria-label="Ingresar cartón manual"
-      className="mb-5 rounded-3xl border bg-white p-4 sm:p-7"
+      className="mb-5 w-[280px] max-w-full rounded-2xl border bg-white p-3"
       onSubmit={(event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -34,18 +34,18 @@ export function ManualCard({
         onSave(game);
       }}
     >
-      <p id="manual-help" className="mb-4 text-sm text-muted-foreground">
+      <p id="manual-help" className="mb-3 text-xs text-muted-foreground">
         Copia o revisa los números de tu cartón. El centro es libre. Al guardar
         se añadirá a tus cartones.
       </p>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-1">
         {LETTERS.map((letter, col) => (
           <div
             key={letter}
-            className="rounded-lg bg-primary py-2 text-center font-bold text-white"
+            className="flex h-8 flex-col items-center justify-center rounded-lg bg-primary text-center text-sm font-bold leading-tight text-white"
           >
             {letter}
-            <span className="block text-xs font-normal">
+            <span className="block text-[10px] font-normal">
               {col * 15 + 1}–{(col + 1) * 15}
             </span>
           </div>
