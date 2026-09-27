@@ -178,3 +178,33 @@ export function toggleCardNumber(
     ),
   };
 }
+
+export function numberMarkState(collection: CardCollection, number: number) {
+  const matching = collection.cards.filter(({ game }) =>
+    game.card.includes(number),
+  );
+  const marked = matching.filter(({ game }) =>
+    game.marked.includes(number),
+  ).length;
+  return {
+    count: matching.length,
+    pressed: marked === 0 ? false : marked === matching.length ? true : "mixed",
+  } as const;
+}
+
+export function toggleAllCardNumber(
+  collection: CardCollection,
+  number: number,
+): CardCollection {
+  const { count, pressed } = numberMarkState(collection, number);
+  if (!count) return collection;
+  return {
+    ...collection,
+    cards: collection.cards.map((card) => {
+      if (!card.game.card.includes(number)) return card;
+      const marked = card.game.marked.filter((n) => n !== number);
+      if (pressed !== true) marked.push(number);
+      return { ...card, game: { ...card.game, marked } };
+    }),
+  };
+}

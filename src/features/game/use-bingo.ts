@@ -6,6 +6,7 @@ import {
   addCard,
   removeCard,
   toggleCardNumber,
+  toggleAllCardNumber,
   restoreCollection,
   STORAGE_KEY,
   type Game,
@@ -28,6 +29,7 @@ type Action =
   | { type: "add"; game: Game; id: string }
   | { type: "remove"; id: string }
   | { type: "clear-marks" }
+  | { type: "toggle-all"; number: number }
   | { type: "notice"; notice: string }
   | { type: "toggle"; id: string; number: number };
 function reducer(state: State, action: Action): State {
@@ -35,6 +37,11 @@ function reducer(state: State, action: Action): State {
   if (action.type === "load")
     return { collection: action.collection, notice: action.notice };
   if (!state.collection) return state;
+  if (action.type === "toggle-all")
+    return {
+      ...state,
+      collection: toggleAllCardNumber(state.collection, action.number),
+    };
   if (action.type === "clear-marks")
     return {
       ...state,
@@ -106,6 +113,7 @@ export function useBingo() {
     add: (game: Game = createGame()) =>
       dispatch({ type: "add", game, id: cardId() }),
     remove: (id: string) => dispatch({ type: "remove", id }),
+    toggleAll: (number: number) => dispatch({ type: "toggle-all", number }),
     clearMarks: () => dispatch({ type: "clear-marks" }),
   };
 }

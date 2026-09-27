@@ -136,3 +136,55 @@ test("rejects invalid collections and duplicate identifiers", () => {
   ])
     assert.equal(restoreCollection(value), null);
 });
+
+import { numberMarkState, toggleAllCardNumber } from "../.test-build/engine.js";
+
+test("number board synchronizes mixed marks, preserves other marks and persists", () => {
+  const game = createGame();
+  const number = game.card[0];
+  const other = game.card[1];
+  const absentGame = {
+    ...game,
+    card: game.card.map((n) =>
+      n === number
+        ? Array.from({ length: 15 }, (_, i) => i + 1).find(
+            (candidate) => !game.card.includes(candidate),
+          )
+        : n,
+    ),
+  };
+  const collection = {
+    version: 3,
+    cards: [
+      { id: "a", game: { ...game, marked: [number, other] } },
+      { id: "b", game },
+      { id: "c", game: absentGame },
+    ],
+  };
+  assert.deepEqual(numberMarkState(collection, number), {
+    count: 2,
+    pressed: "mixed",
+  });
+  const marked = toggleAllCardNumber(collection, number);
+  assert.equal(numberMarkState(marked, number).pressed, true);
+  assert.deepEqual(marked.cards[0].game.marked, [other, number]);
+  assert.deepEqual(marked.cards[1].game.marked, [number]);
+  assert.equal(marked.cards[2], collection.cards[2]);
+  assert.deepEqual(
+    restoreCollection(JSON.parse(JSON.stringify(marked))),
+    marked,
+  );
+  const cleared = toggleAllCardNumber(marked, number);
+  assert.equal(numberMarkState(cleared, number).pressed, false);
+  assert.deepEqual(cleared.cards[0].game.marked, [other]);
+  assert.deepEqual(cleared.cards[1].game.marked, []);
+  assert.equal(
+    numberMarkState(toggleAllCardNumber(cleared, number), number).pressed,
+    true,
+  );
+  assert.equal(toggleAllCardNumber(collection, 76), collection);
+  assert.deepEqual(numberMarkState({ version: 3, cards: [] }, number), {
+    count: 0,
+    pressed: false,
+  });
+});

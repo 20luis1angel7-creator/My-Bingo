@@ -7,10 +7,12 @@ import { useBingo } from "../use-bingo";
 import { winningCells } from "../engine";
 import { PlayingCard } from "./playing-card";
 import { ManualCard } from "./manual-card";
+import { NumberBoard } from "./number-board";
 import { CardScanner } from "./card-scanner";
 
 export function BingoGame() {
-  const { collection, notice, toggle, add, remove, clearMarks } = useBingo();
+  const { collection, notice, toggle, add, remove, clearMarks, toggleAll } =
+    useBingo();
   const [manual, setManual] = useState(false);
   const [scanned, setScanned] = useState<string[]>([]);
   const [message, setMessage] = useState("");
@@ -78,6 +80,7 @@ export function BingoGame() {
           </div>
         )}
       </div>
+      <NumberBoard collection={collection} onToggle={toggleAll} />
       <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <h2 className="text-xl font-bold">
           Mis cartones{" "}
