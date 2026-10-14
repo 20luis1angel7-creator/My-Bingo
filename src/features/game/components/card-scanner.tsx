@@ -162,7 +162,7 @@ export function CardScanner({
         aria-labelledby="scanner-title"
         aria-describedby="scanner-help"
         aria-busy={busy}
-        className="m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-[460px] overflow-y-auto rounded-2xl border bg-background p-4 text-foreground shadow-xl backdrop:bg-black/50 sm:p-5"
+        className="m-auto max-h-[95dvh] w-[calc(100%-1rem)] max-w-[1100px] overflow-y-auto rounded-2xl border bg-background p-3 text-foreground shadow-xl backdrop:bg-black/50 sm:w-[calc(100%-2rem)] sm:p-5"
         onCancel={(event) => {
           event.preventDefault();
           if (!busy) closePhoto();
@@ -223,7 +223,7 @@ export function CardScanner({
               viewBox={`0 0 ${photo.canvas.width} ${photo.canvas.height}`}
               className="mx-auto block h-auto max-w-full touch-none rounded-lg border"
               style={{
-                width: `min(100%, ${(photo.canvas.width / photo.canvas.height) * 42}dvh)`,
+                width: `min(100%, ${(photo.canvas.width / photo.canvas.height) * 70}dvh)`,
               }}
               aria-label="Área del cartón en la foto"
               onPointerDown={(event) => {
