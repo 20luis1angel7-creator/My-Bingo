@@ -33,6 +33,7 @@ export function CardScanner({
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [corners, setCorners] = useState<Quad | null>(null);
   const [picking, setPicking] = useState<number | null>(null);
+  const [zoom, setZoom] = useState(100);
 
   useEffect(() => {
     if (photo && !dialog.current?.open) dialog.current?.showModal();
@@ -43,6 +44,7 @@ export function CardScanner({
     setPhoto(null);
     setCorners(null);
     setPicking(null);
+    setZoom(100);
     dragging.current = null;
     onStatus("");
   }
@@ -61,6 +63,7 @@ export function CardScanner({
     setPhoto(null);
     setCorners(null);
     setPicking(null);
+    setZoom(100);
     try {
       const next = await inspectCardPhoto(file);
       setPhoto(next);
@@ -162,7 +165,7 @@ export function CardScanner({
         aria-labelledby="scanner-title"
         aria-describedby="scanner-help"
         aria-busy={busy}
-        className="m-auto max-h-[95dvh] w-[calc(100%-1rem)] max-w-[1100px] overflow-y-auto rounded-2xl border bg-background p-3 text-foreground shadow-xl backdrop:bg-black/50 sm:w-[calc(100%-2rem)] sm:p-5"
+        className="m-auto max-h-[90dvh] w-[calc(100%-1rem)] max-w-[560px] overflow-y-auto rounded-2xl border bg-background p-3 text-foreground shadow-xl backdrop:bg-black/50 sm:p-5"
         onCancel={(event) => {
           event.preventDefault();
           if (!busy) closePhoto();
@@ -219,124 +222,146 @@ export function CardScanner({
                 {picking + 1}/4).
               </p>
             )}
-            <svg
-              viewBox={`0 0 ${photo.canvas.width} ${photo.canvas.height}`}
-              className="mx-auto block h-auto max-w-full touch-none rounded-lg border"
-              style={{
-                width: `min(100%, ${(photo.canvas.width / photo.canvas.height) * 70}dvh)`,
-              }}
-              aria-label="Área del cartón en la foto"
-              onPointerDown={(event) => {
-                if (busy || picking === null) return;
-                moveCorner(picking, pointerPoint(event));
-                setPicking(picking === 3 ? null : picking + 1);
-              }}
-              onPointerMove={(event) => {
-                if (!busy && dragging.current !== null)
-                  moveCorner(dragging.current, pointerPoint(event));
-              }}
-              onPointerUp={() => {
-                dragging.current = null;
-              }}
-              onPointerCancel={() => {
-                dragging.current = null;
-              }}
-            >
-              <image
-                href={photo.preview}
-                width={photo.canvas.width}
-                height={photo.canvas.height}
+            <label className="flex items-center gap-3 text-sm">
+              <span className="shrink-0">Zoom</span>
+              <input
+                type="range"
+                min={100}
+                max={300}
+                step={10}
+                value={zoom}
+                disabled={busy}
+                onChange={(event) => setZoom(Number(event.target.value))}
+                aria-label="Porcentaje de zoom de la foto"
+                aria-valuetext={`${zoom} %`}
+                className="min-w-0 flex-1 accent-emerald-500"
               />
-              <polygon
-                points={corners.map((p) => `${p.x},${p.y}`).join(" ")}
-                fill="rgb(16 185 129 / .12)"
-                stroke="#10b981"
-                strokeWidth={3}
-                vectorEffect="non-scaling-stroke"
-              />
-              {validQuad(corners) &&
-                [1, 2, 3, 4].flatMap((i) => {
-                  const a = project(corners, i / 5, 0),
-                    b = project(corners, i / 5, 1);
-                  const c = project(corners, 0, i / 5),
-                    d = project(corners, 1, i / 5);
-                  return [
-                    <line
-                      key={`v${i}`}
-                      x1={a.x}
-                      y1={a.y}
-                      x2={b.x}
-                      y2={b.y}
-                      stroke="#10b981"
-                      strokeWidth={1}
-                      vectorEffect="non-scaling-stroke"
-                    />,
-                    <line
-                      key={`h${i}`}
-                      x1={c.x}
-                      y1={c.y}
-                      x2={d.x}
-                      y2={d.y}
-                      stroke="#10b981"
-                      strokeWidth={1}
-                      vectorEffect="non-scaling-stroke"
-                    />,
-                  ];
-                })}
-              {corners.map((p, i) => (
-                <circle
-                  key={i}
-                  cx={p.x}
-                  cy={p.y}
-                  r={photo.canvas.width * 0.022}
-                  fill="#10b981"
-                  stroke="white"
-                  strokeWidth={2}
-                  vectorEffect="non-scaling-stroke"
-                  role="button"
-                  tabIndex={busy ? -1 : 0}
-                  aria-label={`Mover esquina ${cornerNames[i]} con las flechas`}
-                  aria-disabled={busy}
-                  onPointerDown={(event) => {
-                    if (busy || picking !== null) return;
-                    event.stopPropagation();
-                    dragging.current = i;
-                    event.currentTarget.setPointerCapture(event.pointerId);
-                  }}
-                  onKeyDown={(event) => {
-                    if (
-                      busy ||
-                      ![
-                        "ArrowLeft",
-                        "ArrowRight",
-                        "ArrowUp",
-                        "ArrowDown",
-                      ].includes(event.key)
-                    )
-                      return;
-                    event.preventDefault();
-                    const step =
-                      photo.canvas.width * (event.shiftKey ? 0.02 : 0.002);
-                    moveCorner(i, {
-                      x:
-                        p.x +
-                        (event.key === "ArrowRight"
-                          ? step
-                          : event.key === "ArrowLeft"
-                            ? -step
-                            : 0),
-                      y:
-                        p.y +
-                        (event.key === "ArrowDown"
-                          ? step
-                          : event.key === "ArrowUp"
-                            ? -step
-                            : 0),
-                    });
-                  }}
+              <span className="w-12 text-right tabular-nums">{zoom} %</span>
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Amplía con la barra. Desplázate por la foto para ver las esquinas.
+            </p>
+            <div className="w-full overflow-auto rounded-lg border">
+              <svg
+                viewBox={`0 0 ${photo.canvas.width} ${photo.canvas.height}`}
+                className="block h-auto max-w-none"
+                style={{
+                  width: `${zoom}%`,
+                }}
+                aria-label="Área del cartón en la foto"
+                onPointerDown={(event) => {
+                  if (busy || picking === null) return;
+                  moveCorner(picking, pointerPoint(event));
+                  setPicking(picking === 3 ? null : picking + 1);
+                }}
+                onPointerMove={(event) => {
+                  if (!busy && dragging.current !== null)
+                    moveCorner(dragging.current, pointerPoint(event));
+                }}
+                onPointerUp={() => {
+                  dragging.current = null;
+                }}
+                onPointerCancel={() => {
+                  dragging.current = null;
+                }}
+              >
+                <image
+                  href={photo.preview}
+                  width={photo.canvas.width}
+                  height={photo.canvas.height}
                 />
-              ))}
-            </svg>
+                <polygon
+                  points={corners.map((p) => `${p.x},${p.y}`).join(" ")}
+                  fill="rgb(16 185 129 / .12)"
+                  stroke="#10b981"
+                  strokeWidth={3}
+                  vectorEffect="non-scaling-stroke"
+                />
+                {validQuad(corners) &&
+                  [1, 2, 3, 4].flatMap((i) => {
+                    const a = project(corners, i / 5, 0),
+                      b = project(corners, i / 5, 1);
+                    const c = project(corners, 0, i / 5),
+                      d = project(corners, 1, i / 5);
+                    return [
+                      <line
+                        key={`v${i}`}
+                        x1={a.x}
+                        y1={a.y}
+                        x2={b.x}
+                        y2={b.y}
+                        stroke="#10b981"
+                        strokeWidth={1}
+                        vectorEffect="non-scaling-stroke"
+                      />,
+                      <line
+                        key={`h${i}`}
+                        x1={c.x}
+                        y1={c.y}
+                        x2={d.x}
+                        y2={d.y}
+                        stroke="#10b981"
+                        strokeWidth={1}
+                        vectorEffect="non-scaling-stroke"
+                      />,
+                    ];
+                  })}
+                {corners.map((p, i) => (
+                  <circle
+                    key={i}
+                    cx={p.x}
+                    cy={p.y}
+                    r={photo.canvas.width * 0.022}
+                    fill="#10b981"
+                    stroke="white"
+                    strokeWidth={2}
+                    vectorEffect="non-scaling-stroke"
+                    className="touch-none"
+                    role="button"
+                    tabIndex={busy ? -1 : 0}
+                    aria-label={`Mover esquina ${cornerNames[i]} con las flechas`}
+                    aria-disabled={busy}
+                    onPointerDown={(event) => {
+                      if (busy || picking !== null) return;
+                      event.stopPropagation();
+                      dragging.current = i;
+                      event.currentTarget.setPointerCapture(event.pointerId);
+                    }}
+                    onKeyDown={(event) => {
+                      if (
+                        busy ||
+                        ![
+                          "ArrowLeft",
+                          "ArrowRight",
+                          "ArrowUp",
+                          "ArrowDown",
+                        ].includes(event.key)
+                      )
+                        return;
+                      event.preventDefault();
+                      const step =
+                        photo.canvas.width * (event.shiftKey ? 0.02 : 0.002);
+                      moveCorner(i, {
+                        x:
+                          p.x +
+                          (event.key === "ArrowRight"
+                            ? step
+                            : event.key === "ArrowLeft"
+                              ? -step
+                              : 0),
+                        y:
+                          p.y +
+                          (event.key === "ArrowDown"
+                            ? step
+                            : event.key === "ArrowUp"
+                              ? -step
+                              : 0),
+                      });
+                    }}
+                  />
+                ))}
+              </svg>
+            </div>
             <div className="flex flex-wrap gap-2">
               <Button
                 disabled={busy || picking !== null || !validQuad(corners)}
