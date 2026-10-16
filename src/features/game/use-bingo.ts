@@ -11,6 +11,7 @@ import {
   STORAGE_KEY,
   type Game,
   type CardCollection,
+  type WinMode,
 } from "./engine";
 
 // randomUUID is unavailable on some phones when using a local HTTP address.
@@ -29,6 +30,7 @@ type Action =
   | { type: "add"; game: Game; id: string }
   | { type: "remove"; id: string }
   | { type: "clear-marks" }
+  | { type: "win-modes"; modes: WinMode[] }
   | { type: "toggle-all"; number: number }
   | { type: "notice"; notice: string }
   | { type: "toggle"; id: string; number: number };
@@ -37,6 +39,11 @@ function reducer(state: State, action: Action): State {
   if (action.type === "load")
     return { collection: action.collection, notice: action.notice };
   if (!state.collection) return state;
+  if (action.type === "win-modes")
+    return {
+      ...state,
+      collection: { ...state.collection, winModes: action.modes },
+    };
   if (action.type === "toggle-all")
     return {
       ...state,
@@ -115,5 +122,6 @@ export function useBingo() {
     remove: (id: string) => dispatch({ type: "remove", id }),
     toggleAll: (number: number) => dispatch({ type: "toggle-all", number }),
     clearMarks: () => dispatch({ type: "clear-marks" }),
+    setWinModes: (modes: WinMode[]) => dispatch({ type: "win-modes", modes }),
   };
 }

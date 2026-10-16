@@ -35,10 +35,20 @@ export const lines = [
   [4, 8, 12, 16, 20],
 ];
 
-export function winningCells(game: Game): number[] {
+export type WinMode = "corners" | "full";
+export const DEFAULT_WIN_MODES: WinMode[] = ["corners", "full"];
+
+export function winningCells(game: Game, modes?: WinMode[]): number[] {
+  const patterns = modes
+    ? modes.map((mode) =>
+        mode === "corners"
+          ? [0, 4, 20, 24]
+          : Array.from({ length: 25 }, (_, i) => i),
+      )
+    : lines;
   return [
     ...new Set(
-      lines
+      patterns
         .filter((line) =>
           line.every(
             (i) => game.card[i] === null || game.marked.includes(game.card[i]!),
@@ -111,7 +121,11 @@ export function isGame(value: unknown): value is Game {
 }
 
 export type SavedCard = { id: string; game: Game };
-export type CardCollection = { version: 3; cards: SavedCard[] };
+export type CardCollection = {
+  version: 3;
+  cards: SavedCard[];
+  winModes?: WinMode[];
+};
 
 export function restoreCollection(value: unknown): CardCollection | null {
   if (
@@ -122,6 +136,14 @@ export function restoreCollection(value: unknown): CardCollection | null {
   ) {
     const collection = value as CardCollection;
     if (!Array.isArray(collection.cards)) return null;
+    if (
+      collection.winModes !== undefined &&
+      (!Array.isArray(collection.winModes) ||
+        collection.winModes.some(
+          (mode) => mode !== "corners" && mode !== "full",
+        ))
+    )
+      return null;
     const ids = new Set<string>();
     for (const entry of collection.cards) {
       if (

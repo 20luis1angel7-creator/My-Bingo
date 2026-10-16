@@ -9,6 +9,34 @@ import {
   restoreGame,
 } from "../.test-build/engine.js";
 
+test("selected win modes detect corners and full cards independently", () => {
+  const game = createGame();
+  const corners = [0, 4, 20, 24];
+  const marked = corners.map((i) => game.card[i]);
+  const cornerGame = { ...game, marked };
+  assert.deepEqual(winningCells(cornerGame, ["corners"]), corners);
+  assert.deepEqual(winningCells(cornerGame, ["full"]), []);
+  assert.deepEqual(winningCells(cornerGame, []), []);
+  assert.deepEqual(
+    winningCells({ ...game, marked: marked.slice(1) }, ["corners"]),
+    [],
+  );
+  const full = { ...game, marked: game.card.filter((n) => n !== null) };
+  assert.equal(winningCells(full, ["full"]).length, 25);
+  assert.equal(winningCells(full, ["corners", "full"]).length, 25);
+  assert.deepEqual(
+    winningCells({ ...full, marked: full.marked.slice(1) }, ["full"]),
+    [],
+  );
+  assert.deepEqual(
+    winningCells({ ...game, marked: game.card.slice(0, 5) }, [
+      "corners",
+      "full",
+    ]),
+    [],
+  );
+});
+
 test("generated cards have a free center, 24 unique numbers and correct column ranges", () => {
   for (let i = 0; i < 200; i++) {
     const game = createGame();
