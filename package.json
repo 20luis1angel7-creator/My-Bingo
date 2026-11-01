@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "test": "tsc src/features/game/engine.ts src/features/game/scan-card.ts --outDir .test-build --module commonjs --target es2022 --skipLibCheck && node --test tests/*.mjs",
+    "test": "tsc src/features/game/engine.ts src/features/game/scan-card.ts src/features/game/rooms.ts --outDir .test-build --module commonjs --target es2022 --skipLibCheck && node --test tests/*.mjs",
     "test:ocr": "npm test && node tests/ocr/photo.mjs"
   },
   "dependencies": {

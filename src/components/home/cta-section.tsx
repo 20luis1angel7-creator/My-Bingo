@@ -25,7 +25,7 @@ export function CtaSection() {
           dispositivo.
         </p>
         <Link
-          href="/jugar"
+          href="/salas"
           className="inline-flex items-center justify-center gap-2 rounded-lg mt-7 h-12 bg-[#ffd56b] px-7 font-bold text-[#30254d] hover:bg-[#ffe094]"
         >
           Comenzar <ArrowRight aria-hidden="true" className="size-4" />

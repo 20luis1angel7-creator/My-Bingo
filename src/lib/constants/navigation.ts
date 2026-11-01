@@ -1,5 +1,5 @@
 export const navigationItems = [
   { label: "Inicio", href: "/" },
-  { label: "Jugar", href: "/jugar" },
+  { label: "Mis salas", href: "/salas" },
   { label: "Cómo jugar", href: "/#steps-title" },
 ] as const;

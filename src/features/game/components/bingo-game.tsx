@@ -10,7 +10,7 @@ import { ManualCard } from "./manual-card";
 import { NumberBoard } from "./number-board";
 import { CardScanner } from "./card-scanner";
 
-export function BingoGame() {
+export function BingoGame({ storageKey }: { storageKey?: string }) {
   const {
     collection,
     notice,
@@ -20,7 +20,7 @@ export function BingoGame() {
     clearMarks,
     toggleAll,
     setWinModes,
-  } = useBingo();
+  } = useBingo(storageKey);
   const [manual, setManual] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [scanned, setScanned] = useState<string[]>([]);

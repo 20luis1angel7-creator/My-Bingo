@@ -2,8 +2,7 @@ const steps = [
   {
     number: "01",
     title: "Comienza tu partida",
-    description:
-      "Pulsa Comenzar y tendrás un cartón de bingo listo para jugar.",
+    description: "Pulsa Comenzar, elige una sala y juega con sus cartones.",
   },
   {
     number: "02",

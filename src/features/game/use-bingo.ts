@@ -78,7 +78,7 @@ function reducer(state: State, action: Action): State {
   };
 }
 
-export function useBingo() {
+export function useBingo(storageKey = STORAGE_KEY) {
   const [state, dispatch] = useReducer(reducer, {
     collection: null,
     notice: "",
@@ -90,7 +90,7 @@ export function useBingo() {
     };
     let notice = "";
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(storageKey);
       if (saved) {
         const restored = restoreCollection(JSON.parse(saved));
         if (restored) collection = restored;
@@ -112,12 +112,12 @@ export function useBingo() {
       };
     }
     dispatch({ type: "load", collection, notice });
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     if (!state.collection) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.collection));
+      localStorage.setItem(storageKey, JSON.stringify(state.collection));
     } catch {
       dispatch({
         type: "notice",
@@ -125,7 +125,7 @@ export function useBingo() {
           "El navegador no permite guardar. Puedes jugar, pero los cartones y sus marcas se perderán al salir.",
       });
     }
-  }, [state.collection]);
+  }, [state.collection, storageKey]);
 
   return {
     ...state,

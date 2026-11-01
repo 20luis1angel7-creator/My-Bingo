@@ -40,7 +40,7 @@ export function Hero() {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
-            href="/jugar"
+            href="/salas"
             className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-white shadow-lg shadow-primary/15 hover:bg-primary/90"
           >
             Comenzar <ArrowRight aria-hidden="true" className="size-4" />
