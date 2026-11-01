@@ -59,6 +59,21 @@ test("all rows, columns and diagonals win, but incomplete patterns do not", () =
   }
 });
 
+test("horizontal and vertical lines and diagonals respect selected modes", () => {
+  const game = createGame();
+  for (const [index, line] of lines.entries()) {
+    const mode = index < 10 ? "straight" : "diagonal";
+    const other = index < 10 ? "diagonal" : "straight";
+    const marked = line.map((i) => game.card[i]).filter((n) => n !== null);
+    assert.deepEqual(winningCells({ ...game, marked }, [mode]), line);
+    assert.deepEqual(winningCells({ ...game, marked }, [other]), []);
+    assert.deepEqual(
+      winningCells({ ...game, marked: marked.slice(1) }, [mode]),
+      [],
+    );
+  }
+});
+
 test("manual marking toggles, rejects absent numbers and allows correcting bingo", () => {
   const game = createGame();
   const number = game.card[0];

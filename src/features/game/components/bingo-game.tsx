@@ -148,6 +148,8 @@ export function BingoGame() {
               <div className="flex flex-col gap-3">
                 {(
                   [
+                    ["straight", "Línea horizontal o vertical"],
+                    ["diagonal", "Diagonal"],
                     ["corners", "Cuatro esquinas"],
                     ["full", "Cartón lleno"],
                   ] as const
@@ -211,8 +213,8 @@ export function BingoGame() {
       )}
       <p className="mt-5 text-xs leading-5 text-muted-foreground">
         Tus cartones, marcas y opciones para ganar se guardan en este navegador.
-        Hay bingo al completar cualquiera de las opciones activadas: las cuatro
-        esquinas o los 24 números del cartón (el centro es libre).
+        Hay bingo al completar cualquiera de las opciones activadas. El centro
+        es libre.
       </p>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useReducer } from "react";
 import {
   createGame,
+  DEFAULT_WIN_MODES,
   addCard,
   removeCard,
   toggleCardNumber,
@@ -42,7 +43,11 @@ function reducer(state: State, action: Action): State {
   if (action.type === "win-modes")
     return {
       ...state,
-      collection: { ...state.collection, winModes: action.modes },
+      collection: {
+        ...state.collection,
+        winModes: action.modes,
+        winModesVersion: 1,
+      },
     };
   if (action.type === "toggle-all")
     return {
@@ -96,6 +101,15 @@ export function useBingo() {
     } catch {
       notice =
         "No pudimos recuperar tus cartones. Puedes añadirlos para jugar.";
+    }
+    if (collection.winModesVersion !== 1) {
+      collection = {
+        ...collection,
+        winModesVersion: 1,
+        winModes: [
+          ...new Set([...(collection.winModes ?? []), ...DEFAULT_WIN_MODES]),
+        ],
+      };
     }
     dispatch({ type: "load", collection, notice });
   }, []);

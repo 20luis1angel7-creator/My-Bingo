@@ -35,16 +35,17 @@ export const lines = [
   [4, 8, 12, 16, 20],
 ];
 
-export type WinMode = "corners" | "full";
-export const DEFAULT_WIN_MODES: WinMode[] = ["corners", "full"];
+export type WinMode = "corners" | "full" | "straight" | "diagonal";
+export const DEFAULT_WIN_MODES: WinMode[] = ["straight", "diagonal"];
 
 export function winningCells(game: Game, modes?: WinMode[]): number[] {
   const patterns = modes
-    ? modes.map((mode) =>
-        mode === "corners"
-          ? [0, 4, 20, 24]
-          : Array.from({ length: 25 }, (_, i) => i),
-      )
+    ? modes.flatMap((mode) => {
+        if (mode === "straight") return lines.slice(0, 10);
+        if (mode === "diagonal") return lines.slice(10);
+        if (mode === "corners") return [[0, 4, 20, 24]];
+        return [Array.from({ length: 25 }, (_, i) => i)];
+      })
     : lines;
   return [
     ...new Set(
@@ -125,6 +126,7 @@ export type CardCollection = {
   version: 3;
   cards: SavedCard[];
   winModes?: WinMode[];
+  winModesVersion?: 1;
 };
 
 export function restoreCollection(value: unknown): CardCollection | null {
@@ -140,7 +142,7 @@ export function restoreCollection(value: unknown): CardCollection | null {
       collection.winModes !== undefined &&
       (!Array.isArray(collection.winModes) ||
         collection.winModes.some(
-          (mode) => mode !== "corners" && mode !== "full",
+          (mode) => !["corners", "full", "straight", "diagonal"].includes(mode),
         ))
     )
       return null;
